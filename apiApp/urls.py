@@ -4,7 +4,16 @@ from . import views
 
 
 urlpatterns = [
-        path('',views.index,name='index'),
-        path('date_filter',views.date_filter,name='date_filter')
-        #path('store_data',views.data_store,name='store_data')
+        path('netPromoterScore',views.netPromoterScore,name='netPromoterScore'),
+        path('netSentimentScore',views.netSentimentScore,name='netSentimentScore'),
+        path('npsOverTime',views.npsOverTime,name='npsOverTime'),
+        path('nssOverTime',views.nssOverTime,name='nssOverTime'),
+        path('npsVsSentiments',views.npsVsSentiments,name='npsVsSentiments'),
+        path('alertComments',views.alertComments,name='alertComments'),
+        path('topComments',views.topComments,name='topComments'),
+        path('clinics_data',views.clinics_data,name='clinics_data'),
+        path('totalCards',views.totalCards,name='totalCards'),
+        path('wordFrequency',views.wordFrequency,name='wordFrequency'),
+        
+        #path('store_data',views.store_data,name='store_data')
 ]

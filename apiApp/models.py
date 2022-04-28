@@ -16,3 +16,15 @@ class everside_nps(models.Model):
     day = models.CharField(max_length=100)
     month = models.CharField(max_length=100)
     year = models.CharField(max_length=100)
+
+class everside_nps_clinics(models.Model):
+    clinic = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+
+class everside_nps_word_frequency(models.Model):
+    word = models.CharField(max_length=100)
+    question_type = models.CharField(max_length=100)
+    frequency = models.CharField(max_length=100)
+
+    
