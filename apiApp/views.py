@@ -24,15 +24,20 @@ from django.http.response import JsonResponse
 @api_view(['GET'])
 def netPromoterScore(request,format=None):
     if request.method == 'GET':
-        try:
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+        #try:
+            #data = request.data
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+
+            #start_year = str(data['start_year'])
+            #start_month = str(data['start_month'])
+            #end_year = str(data['end_year'])
+            #end_month = str(data['end_month'])
 
             if start_year == end_year:
-                query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+str(data['start_month'])+' AND year='+str(start_year)+') AND (CAST(month as inT)<='+str(data['end_month'])+' AND year='+str(end_year)+');'
+                query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+str(start_month)+' AND year='+str(start_year)+') AND (CAST(month as inT)<='+str(end_month)+' AND year='+str(end_year)+');'
                 print(query)
                 count = everside_nps.objects.raw(query)
                 total_count = len(count)
@@ -120,8 +125,8 @@ def netPromoterScore(request,format=None):
             
             return Response({'nps':nps,
                             'nps_pie':nps_pie})
-        except:
-            return Response({'Message':'No Data  except'})
+        #except:
+        #    return Response({'Message':'No Data  except'})
 
 
 
@@ -129,14 +134,13 @@ def netPromoterScore(request,format=None):
 def netSentimentScore(request,format=None):
     if request.method == 'GET':
         try:
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
 
             if start_year == end_year:
-                query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+str(data['start_month'])+' AND year='+str(start_year)+') AND (CAST(month as inT)<='+str(data['end_month'])+' AND year='+str(end_year)+');'
+                query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+start_month+' AND year='+str(start_year)+') AND (CAST(month as inT)<='+str(end_month)+' AND year='+str(end_year)+');'
                 count = everside_nps.objects.raw(query)
                 total_count = len(count)
                 query = 'SELECT * FROM apiApp_everside_nps WHERE label="Positive" AND (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+');'
@@ -230,11 +234,10 @@ def npsOverTime(request,format=None):
     try:
         if request.method == 'GET':
             months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
             nps_over_time = []
             if start_year == end_year:
                 for i in range(int(start_month),int(end_month)+1):
@@ -375,11 +378,10 @@ def nssOverTime(request,format=None):
     try:
         if request.method == 'GET':
             months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
             nss_over_time = []
             if start_year == end_year:
                 for i in range(int(start_month),int(end_month)+1):
@@ -549,12 +551,11 @@ def nssOverTime(request,format=None):
 def npsVsSentiments(request,format=None):
     try:
         if request.method == 'GET':
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
-
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            
             if start_year == end_year:
                 #-------------Extreme---------------------------------
                 query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+') AND label="Extreme";'
@@ -590,6 +591,7 @@ def npsVsSentiments(request,format=None):
                     detractor = 0
                 
                 extreme = {
+                    'sentiment_label':'Extreme',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
@@ -628,6 +630,7 @@ def npsVsSentiments(request,format=None):
                     detractor = 0
             
                 positive = {
+                    'sentiment_label':'Positive',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
@@ -667,6 +670,7 @@ def npsVsSentiments(request,format=None):
                     detractor = 0
 
                 negative = {
+                    'sentiment_label':'Negative',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
@@ -706,6 +710,7 @@ def npsVsSentiments(request,format=None):
                     detractor = 0  
 
                 neutral = {
+                    'sentiment_label':'neutral',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
@@ -756,6 +761,7 @@ def npsVsSentiments(request,format=None):
                     detractor = 0
 
                 extreme = {
+                    'sentiment_label':'Extreme',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
@@ -805,6 +811,7 @@ def npsVsSentiments(request,format=None):
                     detractor = 0
 
                 positive = {
+                    'sentiment_label':'Positive',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
@@ -855,6 +862,7 @@ def npsVsSentiments(request,format=None):
                     detractor = 0
 
                 negative = {
+                    'sentiment_label':'Negative',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
@@ -904,17 +912,19 @@ def npsVsSentiments(request,format=None):
                     detractor = 0
 
                 neutral = {
+                    'sentiment_label':'Neutral',
                     'promoter':promoter,
                     'passive':passive,
                     'detractor':detractor
                 }
 
 
-            
-            return Response({'extreme':extreme,
+            final_data = [extreme,negative,neutral,positive]
+            '''return Response({'extreme':extreme,
                              'positive':positive,
                              'negative':negative,
-                             'neutral':neutral})
+                             'neutral':neutral})'''
+            return Response(final_data)
             
     except:
         return Response({'Message':'No Data except'})
@@ -924,11 +934,10 @@ def npsVsSentiments(request,format=None):
 def alertComments(request,format=None):
     try:
         if request.method == 'GET':
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
 
             if start_year == end_year:
                 query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+') AND label="Extreme" ORDER BY (CASE WHEN CAST(day AS INT)<10 THEN (CAST(month||0||day AS INT))ELSE (CAST(month||day AS INT)) END) DESC'
@@ -944,7 +953,12 @@ def alertComments(request,format=None):
                 query_exec = list(query_exec2)+list(query_exec1)
                 serialized_data = eversideAlertComments(query_exec,many=True)
 
-        return JsonResponse(serialized_data.data, safe=False)
+        final_data = []
+        for i in range(len(serialized_data.data)):
+            dict_id = {'id':i+1}
+            final_dict = dict_id|dict((serialized_data.data)[i])
+            final_data.append(final_dict)
+        return Response(final_data)
     except:
         return Response({'Message':'No Data except'})
 
@@ -953,11 +967,10 @@ def alertComments(request,format=None):
 def topComments(request,format=None):
     try:
         if request.method == 'GET':
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
 
             if start_year == end_year:
                 query = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+') AND label="Positive" ORDER BY RANDOM() LIMIT 4'
@@ -1005,9 +1018,12 @@ def topComments(request,format=None):
                 query_exec = positive + negative + extreme + neutral
                 random.shuffle(query_exec)
                 serialized_data = eversideTopComments(query_exec,many=True)
-
-
-        return JsonResponse(serialized_data.data, safe=False)
+        final_data = []
+        for i in range(len(serialized_data.data)):
+            dict_id = {'id':i+1}
+            final_dict = dict_id|dict((serialized_data.data)[i])
+            final_data.append(final_dict)
+        return Response(final_data)
         
     except:
         return Response({'Message':'No Data except'})
@@ -1016,11 +1032,10 @@ def topComments(request,format=None):
 def clinics_data(request,format=None):
     try:
         if request.method == 'GET':
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
             clinic_list = []
             u_clinic_list = []
             nps_list = []
@@ -1132,11 +1147,10 @@ def clinics_data(request,format=None):
 def totalCards(request,format=None):
     try:
         if request.method == 'GET':
-            data = request.data
-            start_year = str(data['start_year'])
-            start_month = str(data['start_month'])
-            end_year = str(data['end_year'])
-            end_month = str(data['end_month'])
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
             
             if start_year == end_year:
                query = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+')'
@@ -1203,50 +1217,3 @@ def wordFrequency(request,format=None):
             return Response({'word_frequency':data_serializer.data})
     except:
         Response({'Message':'No Data except'})
-
-
-
-'''def store_data(request):
-    df = pd.read_csv("C:/Users/Eko-3/Everside/full_data.csv")
-    print(df.columns)
-    for i in range(df.shape[0]):
-        data = everside_nps(
-                            review_ID = list(df['ID'])[i], 
-                            review = list(df['review'])[i],
-                            polarity_score = list(df['polarity_score'])[i],
-                            label = list(df['label'])[i],
-                            nps_score = list(df['nps_score'])[i],
-                            nps_label = list(df['nps_label'])[i],
-                            date = list(df['date'])[i],
-                            clinic = list(df['clinic'])[i],
-                            city = list(df['city'])[i],
-                            state = list(df['state'])[i],
-                            day = list(df['day'])[i],
-                            month = list(df['month'])[i],
-                            year = list(df['year'])[i]
-                            )
-        data.save()
-        print(i)
-    return HttpResponse("Hello World")
-
-    for i in range(df.shape[0]):
-        data = everside_nps_word_frequency(
-                                            word = list(df['word_group'])[i],
-                                            question_type = list(df['question_type'])[i],
-                                            frequency = list(df['frequency'])[i]
-        )
-        data.save()
-        print(i)
-
-
-    
-    for i in range(df.shape[0]):
-        data = everside_nps_clinics(
-                                    clinic = list(df['clinic'])[i],
-                                    city = list(df['city'])[i],
-                                    state = list(df['state'])[i]
-                                    )
-        data.save()
-        print(i)
-
-    return HttpResponse("Hello World")'''
