@@ -14,6 +14,7 @@ urlpatterns = [
         path('clinics_data',views.clinics_data,name='clinics_data'),
         path('totalCards',views.totalCards,name='totalCards'),
         path('wordFrequency',views.wordFrequency,name='wordFrequency'),
+        path('cityStateClinics',views.cityStateClinics,name='cityStateClinics'),
         
         #path('store_data',views.store_data,name='store_data')
 ]

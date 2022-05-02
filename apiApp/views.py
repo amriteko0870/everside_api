@@ -3,6 +3,7 @@ from django.http import HttpResponse
 import pandas as pd
 import json
 import random
+import itertools
 
 #-------------import api serializers --------------------
 from apiApp.serializers import eversideNpsDataSerializer,eversideAlertComments,eversideTopComments,eversideWordFrequencySerializer
@@ -16,11 +17,43 @@ from apiApp.models import everside_nps,everside_nps_clinics,everside_nps_word_fr
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.http.response import JsonResponse
+from django.db.models import Avg, Max, Min, Sum
 #-------------------------------------------------
 
 # Create your views here.
 #---------------------Dashboard API Start here--------------------------------------------
-            
+@api_view(['GET'])
+def cityStateClinics(request,format=None):
+    if request.method == 'GET':
+        try:
+            #-----------------date------------------------------
+            date = []
+            date_data = everside_nps.objects.all().aggregate(Min('year'))
+            date.append(date_data['year__min'])
+            date_data = everside_nps.objects.all().aggregate(Max('year'))
+            date.append(date_data['year__max'])
+            #-----------------Region----------------------------
+            region = []
+            obj = everside_nps.objects.values_list('city','state').distinct()
+            for i in obj:
+                region_name = str(i[0])+','+str(i[1])
+                region.append(region_name)
+                region.sort()
+            #-----------------Clinics-------------------------------
+            clinics = {}
+            for i in region:
+                c_s = i.split(',')
+                city = str(c_s[0])
+                state = str(c_s[1])
+                print(city,state)
+                clinic_names = everside_nps.objects.values_list('clinic').filter(city=city,state=state).distinct()
+                clinics[i] = list(itertools.chain(*list(clinic_names)))
+            return Response({'date':date,'region':region,'clinics':clinics})
+        except:
+            return Response({'Message':'No Data  except'})
+
+
+
 @api_view(['GET'])
 def netPromoterScore(request,format=None):
     if request.method == 'GET':
