@@ -24,7 +24,7 @@ from django.http.response import JsonResponse
 @api_view(['GET'])
 def netPromoterScore(request,format=None):
     if request.method == 'GET':
-        #try:
+        try:
             #data = request.data
             start_year = request.GET.get('start_year')
             start_month = request.GET.get('start_month')
@@ -125,8 +125,8 @@ def netPromoterScore(request,format=None):
             
             return Response({'nps':nps,
                             'nps_pie':nps_pie})
-        #except:
-        #    return Response({'Message':'No Data  except'})
+        except:
+            return Response({'Message':'No Data  except'})
 
 
 
