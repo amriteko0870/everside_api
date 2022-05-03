@@ -42,9 +42,11 @@ class eversideTopComments(serializers.HyperlinkedModelSerializer):
                 ]
 
 class eversideWordFrequencySerializer(serializers.HyperlinkedModelSerializer):
+    text = serializers.CharField(source='word')
+    value = serializers.CharField(source='frequency')
     class Meta:
         model = everside_nps_word_frequency
         fields = [
-                'word',
-                'frequency'
+                'text',
+                'value'
                 ]

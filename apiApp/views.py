@@ -47,7 +47,8 @@ def cityStateClinics(request,format=None):
                 state = str(c_s[1])
                 print(city,state)
                 clinic_names = everside_nps.objects.values_list('clinic').filter(city=city,state=state).distinct()
-                clinics[i] = list(itertools.chain(*list(clinic_names)))
+                print(clinic_names)
+                clinics[i] = itertools.chain(*clinic_names)
             return Response({'date':date,'region':region,'clinics':clinics})
         except:
             return Response({'Message':'No Data  except'})
@@ -77,18 +78,21 @@ def netPromoterScore(request,format=None):
 
                 query = 'SELECT * FROM apiApp_everside_nps WHERE nps_label="Promoter" AND (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+');'
                 count = everside_nps.objects.raw(query)
+                total_promoters = len(count)
                 promoters = round(len(count)/total_count*100)
                 if promoters==0:
                     promoters = round(len(count)/total_count*100,2)
 
                 query = 'SELECT * FROM apiApp_everside_nps WHERE nps_label="Passive" AND (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+');'
                 count = everside_nps.objects.raw(query)
+                total_passive = len(count)
                 passive = round(len(count)/total_count*100)
                 if passive==0:
                     passive = round(len(count)/total_count*100,2)
 
                 query = 'SELECT * FROM apiApp_everside_nps WHERE nps_label="Detractor" AND (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+');'
                 count = everside_nps.objects.raw(query)
+                total_detractors = len(count)
                 detractor = round(len(count)/total_count*100)
                 if detractor==0:
                     detractor = round(len(count)/total_count*100,2)
@@ -106,6 +110,7 @@ def netPromoterScore(request,format=None):
                 count1 = everside_nps.objects.raw(query1)
                 count2 = everside_nps.objects.raw(query2)
                 count = len(count1)+len(count2)
+                total_promoters = count
                 promoters = round(count/total_count*100)
                 if promoters==0:
                     promoters = round(count/total_count*100,2)
@@ -115,6 +120,7 @@ def netPromoterScore(request,format=None):
                 count1 = everside_nps.objects.raw(query1)
                 count2 = everside_nps.objects.raw(query2)
                 count = len(count1)+len(count2)
+                total_passive = count
                 passive = round(count/total_count*100)
                 if passive==0:
                     passive = round(count/total_count*100,2)
@@ -124,6 +130,7 @@ def netPromoterScore(request,format=None):
                 count1 = everside_nps.objects.raw(query1)
                 count2 = everside_nps.objects.raw(query2)
                 count = len(count1)+len(count2)
+                total_detractors = count
                 detractor = round(count/total_count*100)
                 if detractor==0:
                     detractor = round(count/total_count*100,2)
@@ -135,8 +142,11 @@ def netPromoterScore(request,format=None):
             nps ={
                 "nps_score":(promoters-detractor),
                 "promoters":promoters,
+                "total_promoters":total_promoters,
                 "passive":passive,
+                "total_passive":total_passive,
                 "detractors":detractor,
+                "total_detractors":total_detractors
             }
             
             nps_pie = [{
@@ -1244,9 +1254,9 @@ def totalCards(request,format=None):
 def wordFrequency(request,format=None):
     try:
         if request.method == 'GET':
-            query = 'SELECT * FROM apiApp_everside_nps_word_frequency ORDER BY CAST(frequency AS INT) DESC LIMIT 8'
+            query = 'SELECT * FROM apiApp_everside_nps_word_frequency ORDER BY CAST(frequency AS INT) DESC'
             query_exec = everside_nps_word_frequency.objects.raw(query)
             data_serializer = eversideWordFrequencySerializer(query_exec,many=True)
-            return Response({'word_frequency':data_serializer.data})
+            return Response(data_serializer.data)
     except:
         Response({'Message':'No Data except'})
