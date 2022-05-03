@@ -4,6 +4,9 @@ import pandas as pd
 import json
 import random
 import itertools
+from rest_framework.decorators import parser_classes
+from rest_framework.parsers import MultiPartParser,FormParser
+
 
 #-------------import api serializers --------------------
 from apiApp.serializers import eversideNpsDataSerializer,eversideAlertComments,eversideTopComments,eversideWordFrequencySerializer
@@ -1259,4 +1262,24 @@ def wordFrequency(request,format=None):
             data_serializer = eversideWordFrequencySerializer(query_exec,many=True)
             return Response(data_serializer.data)
     except:
-        Response({'Message':'No Data except'})
+        return Response({'Message':'No Data except'})
+
+
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser,FormParser])
+def fileUpload(request,format=None):
+    try:
+        up_file = request.FILES.getlist('file')
+
+        df = pd.read_csv(up_file[0])
+        print(df.columns)
+        print(request.data)
+        if list(df.columns)[0]=='CLIENT_ID' and list(df.columns)[1]=="MEMBER_ID" and df.columns[2]=='ZIP':
+            mes = 'TRUE'
+        else:
+            mes = 'FALSE'
+        return Response({'Message':mes,'Column_names':df.columns})
+
+    except:
+        return Response({'Message':"FALSE",'ERROR':'INCORRECT FILE TYPE'})

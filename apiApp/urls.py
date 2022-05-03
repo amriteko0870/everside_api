@@ -15,7 +15,8 @@ urlpatterns = [
         path('totalCards',views.totalCards,name='totalCards'),
         path('wordFrequency',views.wordFrequency,name='wordFrequency'),
         path('cityStateClinics',views.cityStateClinics,name='cityStateClinics'),
-        
+        path('fileUpload',views.fileUpload,name='fileUpload'),
+
         #path('store_data',views.store_data,name='store_data')
 ]
 
