@@ -41,6 +41,15 @@ class eversideTopComments(serializers.HyperlinkedModelSerializer):
                 'label'
                 ]
 
+class eversideTotalComments(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model =  everside_nps
+        fields = [
+                'id',
+                'review',
+                'label',
+                ]
+
 class eversideWordFrequencySerializer(serializers.HyperlinkedModelSerializer):
     text = serializers.CharField(source='word')
     value = serializers.CharField(source='frequency')

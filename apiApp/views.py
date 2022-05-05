@@ -9,7 +9,7 @@ from rest_framework.parsers import MultiPartParser,FormParser
 
 
 #-------------import api serializers --------------------
-from apiApp.serializers import eversideNpsDataSerializer,eversideAlertComments,eversideTopComments,eversideWordFrequencySerializer
+from apiApp.serializers import eversideNpsDataSerializer,eversideAlertComments,eversideTopComments,eversideWordFrequencySerializer,eversideTotalComments
 #--------------------------------------------------------
 
 #---------------import models-----------------------------
@@ -236,9 +236,7 @@ def cityStateClinics(request,format=None):
                 c_s = i.split(',')
                 city = str(c_s[0])
                 state = str(c_s[1])
-                print(city,state)
                 clinic_names = everside_nps.objects.values_list('clinic').filter(city=city,state=state).distinct()
-                print(clinic_names)
                 clinics[i] = itertools.chain(*clinic_names)
             return Response({'date':date,'region':region,'clinics':clinics})
         except:
@@ -251,6 +249,7 @@ def netPromoterScore(request,format=None):
     if request.method == 'GET':
         try:
             #data = request.data
+            
             start_year = request.GET.get('start_year')
             start_month = request.GET.get('start_month')
             end_year = request.GET.get('end_year')
@@ -261,9 +260,22 @@ def netPromoterScore(request,format=None):
             #end_year = str(data['end_year'])
             #end_month = str(data['end_month'])
 
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
+
+
             if start_year == end_year:
                 query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+str(start_month)+' AND year='+str(start_year)+') AND (CAST(month as inT)<='+str(end_month)+' AND year='+str(end_year)+');'
-                print(query)
                 count = everside_nps.objects.raw(query)
                 total_count = len(count)
 
@@ -357,10 +369,11 @@ def netPromoterScore(request,format=None):
                     }]
 
             
-            return Response({'nps':nps,
-                            'nps_pie':nps_pie})
+            return Response({'Message':'TRUE',
+                             'nps':nps,
+                             'nps_pie':nps_pie})
         except:
-            return Response({'Message':'No Data  except'})
+            return Response({'Message':'FALSE'})
 
 
 
@@ -373,24 +386,39 @@ def netSentimentScore(request,format=None):
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
 
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
             if start_year == end_year:
                 query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+start_month+' AND year='+str(start_year)+') AND (CAST(month as inT)<='+str(end_month)+' AND year='+str(end_year)+');'
                 count = everside_nps.objects.raw(query)
                 total_count = len(count)
                 query = 'SELECT * FROM apiApp_everside_nps WHERE label="Positive" AND (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+');'
                 count = everside_nps.objects.raw(query)
+                total_positive = len(count)
                 positive = round(len(count)/total_count*100)
                 if positive==0:
                     positive = round(len(count)/total_count*100,2)
 
                 query = 'SELECT * FROM apiApp_everside_nps WHERE label="Negative" AND (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+');'
                 count = everside_nps.objects.raw(query)
+                total_negative = len(count)
                 negative = round(len(count)/total_count*100)
                 if negative==0:
                     negative = round(len(count)/total_count*100,2)
 
                 query = 'SELECT * FROM apiApp_everside_nps WHERE label="Extreme" AND (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+');'
                 count = everside_nps.objects.raw(query)
+                total_extreme = len(count)
                 extreme = round(len(count)/total_count*100)
                 if extreme==0:
                     extreme = round(len(count)/total_count*100,2)
@@ -408,6 +436,7 @@ def netSentimentScore(request,format=None):
                     count1 = everside_nps.objects.raw(query1)
                     count2 = everside_nps.objects.raw(query2)
                     count = len(count1)+len(count2)
+                    total_positive = count
                     positive = round(count/total_count*100)
                     if positive==0:
                         positive = round(count/total_count*100,2)
@@ -418,6 +447,7 @@ def netSentimentScore(request,format=None):
                     count1 = everside_nps.objects.raw(query1)
                     count2 = everside_nps.objects.raw(query2)
                     count = len(count1)+len(count2)
+                    total_negative = count
                     negative = round(count/total_count*100)
                     if negative==0:
                         negative = round(count/total_count*100,2)
@@ -428,6 +458,7 @@ def netSentimentScore(request,format=None):
                     count1 = everside_nps.objects.raw(query1)
                     count2 = everside_nps.objects.raw(query2)
                     count = len(count1)+len(count2)
+                    total_extreme = count
                     extreme = round(count/total_count*100)
                     if extreme==0:
                         extreme = round(count/total_count*100,2)
@@ -435,9 +466,13 @@ def netSentimentScore(request,format=None):
                     
             nss ={
                     "nss_score":(positive-negative-extreme),
+                    "total": total_count,
                     "positive":positive,
+                    "total_positive":total_positive,
                     "negative":negative,
+                    "total_negative":total_negative,
                     "extreme":extreme,
+                    "total_extreme":total_extreme,
                 }
                 
             nss_pie = [{
@@ -455,11 +490,12 @@ def netSentimentScore(request,format=None):
                         "percentage":extreme,
                         "color":"#DB2B39",
                     }]
-            return Response({'nss':nss,
+            return Response({'Message':'TRUE',
+                             'nss':nss,
                              'nss_pie':nss_pie})
         
         except:
-            return Response({'Message':'No Data  except'})
+            return Response({'Message':'FALSE'})
 
 
 
@@ -473,6 +509,19 @@ def npsOverTime(request,format=None):
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
             nps_over_time = []
+
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
             if start_year == end_year:
                 for i in range(int(start_month),int(end_month)+1):
                     query = 'SELECT * FROM apiApp_everside_nps WHERE year='+start_year+' And month='+str(i)+';'
@@ -601,9 +650,9 @@ def npsOverTime(request,format=None):
                         'detractor':detractor,
                     }
                     nps_over_time.append(over_time_data)
-            return Response({'nps_over_time':nps_over_time})
+            return Response({'Message':'TRUE','nps_over_time':nps_over_time})
     except:
-        return Response({'Message':'No Data  except'})
+        return Response({'Message':'FALSE'})
 
 
 
@@ -617,13 +666,24 @@ def nssOverTime(request,format=None):
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
             nss_over_time = []
+
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
             if start_year == end_year:
                 for i in range(int(start_month),int(end_month)+1):
                     query = 'SELECT * FROM apiApp_everside_nps WHERE year='+start_year+' And month='+str(i)+';'
                     count = everside_nps.objects.raw(query)
                     total_count = len(count)
-                    print(query)
-                    print(total_count)
                     query = 'SELECT * FROM apiApp_everside_nps WHERE label="Positive" AND year='+start_year+' And month='+str(i)+';'
                     count = everside_nps.objects.raw(query)
                     if(len(count)!=0):
@@ -632,7 +692,6 @@ def nssOverTime(request,format=None):
                             positive = round(len(count)/total_count*100,2)
                     else:
                         positive = 0
-                    print(query)
                     query = 'SELECT * FROM apiApp_everside_nps WHERE label="Negative" AND year='+start_year+' And month='+str(i)+';'
                     count = everside_nps.objects.raw(query)
                     if len(count)!=0:
@@ -776,9 +835,9 @@ def nssOverTime(request,format=None):
                             'neutral':neutral,
                         }
                         nss_over_time.append(over_time_data)
-            return Response({'nss_over_time':nss_over_time})
+            return Response({'Message':'TRUE','nss_over_time':nss_over_time})
     except:
-        return Response({'Message':'No Data  except'})
+        return Response({'Message':'FALSE'})
 
 
 @api_view(['GET'])
@@ -790,6 +849,18 @@ def npsVsSentiments(request,format=None):
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
             
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
             if start_year == end_year:
                 #-------------Extreme---------------------------------
                 query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+') AND label="Extreme";'
@@ -1158,10 +1229,10 @@ def npsVsSentiments(request,format=None):
                              'positive':positive,
                              'negative':negative,
                              'neutral':neutral})'''
-            return Response(final_data)
+            return Response({'Message':'TRUE','data':final_data})
             
     except:
-        return Response({'Message':'No Data except'})
+        return Response({'Message':'FALSE'})
 
 
 @api_view(['GET'])
@@ -1172,6 +1243,18 @@ def alertComments(request,format=None):
             start_month = request.GET.get('start_month')
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
+
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
 
             if start_year == end_year:
                 query = 'SELECT * FROM apiApp_everside_nps WHERE (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+') AND label="Extreme" ORDER BY (CASE WHEN CAST(day AS INT)<10 THEN (CAST(month||0||day AS INT))ELSE (CAST(month||day AS INT)) END) DESC'
@@ -1192,9 +1275,9 @@ def alertComments(request,format=None):
             dict_id = {'id':i+1}
             final_dict = dict_id|dict((serialized_data.data)[i])
             final_data.append(final_dict)
-        return Response(final_data)
+        return Response({'Message':'TRUE','data':final_data})
     except:
-        return Response({'Message':'No Data except'})
+        return Response({'Message':'FALSE'})
 
 
 @api_view(['GET'])
@@ -1205,6 +1288,19 @@ def topComments(request,format=None):
             start_month = request.GET.get('start_month')
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
+
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
 
             if start_year == end_year:
                 query = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+') AND label="Positive" ORDER BY RANDOM() LIMIT 4'
@@ -1257,10 +1353,34 @@ def topComments(request,format=None):
             dict_id = {'id':i+1}
             final_dict = dict_id|dict((serialized_data.data)[i])
             final_data.append(final_dict)
-        return Response(final_data)
+        return Response({'Message':'TRUE','data':final_data})
         
     except:
-        return Response({'Message':'No Data except'})
+        return Response({'Message':'FALSE'})
+
+@api_view(['GET'])
+def totalComments(request,format=None):
+    try:
+        if request.method == 'GET':
+            start_year = request.GET.get('start_year')
+            start_month = request.GET.get('start_month')
+            end_year = request.GET.get('end_year')
+            end_month = request.GET.get('end_month')
+            
+            if start_year == end_year:
+                query = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+')'
+                query_exec = everside_nps.objects.raw(query)
+                serialized_data = eversideTotalComments(query_exec,many=True)
+            else:
+                query1 = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<=12 AND year='+start_year+')'    
+                query2 = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>=1 AND year='+end_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+')'
+                query_exec1 = everside_nps.objects.raw(query1)
+                query_exec2 = everside_nps.objects.raw(query2)
+                query_exec =  list(query_exec1)+list(query_exec2)
+                serialized_data = eversideTotalComments(query_exec,many=True)
+            return Response({'Message':'TRUE','data':serialized_data.data})
+    except:
+        return Response({'Message':'FALSE'})
 
 @api_view(['GET'])
 def clinics_data(request,format=None):
@@ -1276,6 +1396,19 @@ def clinics_data(request,format=None):
             city_list = []
             state_list = []
             final_data = []
+
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
             if start_year == end_year:
                 query = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+')'
                 query_exec = everside_nps.objects.raw(query)
@@ -1371,10 +1504,10 @@ def clinics_data(request,format=None):
                     }
                     final_data.append(data)
 
-            return Response({'data':final_data})     
+            return Response({'Message':'TRUE','data':final_data})     
         
     except:
-        return Response({'Message':'No Data except'})
+        return Response({'Message':'FALSE'})
 
 
 @api_view(['GET'])
@@ -1386,6 +1519,18 @@ def totalCards(request,format=None):
             end_year = request.GET.get('end_year')
             end_month = request.GET.get('end_month')
             
+            if int(start_year) == int(end_year):
+                pass
+            elif int(end_year) == int(start_year)+1: 
+                pass
+            else:
+                return Response({'Message':'FALSE'})
+
+            if int(end_year) == int(start_year)+1:
+                month_count = 13 - int(start_month) + int(end_month)
+                if month_count > 13:
+                    return Response({'Message':'FALSE'})
+
             if start_year == end_year:
                query = 'SELECT * from apiApp_everside_nps where (CAST(month as inT)>='+start_month+' AND year='+start_year+') AND (CAST(month as inT)<='+end_month+' AND year='+end_year+')'
                query_exec = everside_nps.objects.raw(query)
@@ -1435,10 +1580,10 @@ def totalCards(request,format=None):
                             'doctors':5125,
                             'clients':956
                     }
-            return Response({'card_data':card_data})
+            return Response({'Message':'TRUE','card_data':card_data})
             
     except:
-        return Response({'Message':'No Data except'})
+        return Response({'Message':'FALSE'})
 
 
 @api_view(['GET'])
