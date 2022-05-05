@@ -1272,8 +1272,11 @@ def alertComments(request,format=None):
 
         final_data = []
         for i in range(len(serialized_data.data)):
+            final_dict = {}
             dict_id = {'id':i+1}
-            final_dict = dict_id|dict((serialized_data.data)[i])
+            final_dict.update(dict_id)
+            final_dict.update(dict((serialized_data.data)[i]))
+            # final_dict = dict_id|dict((serialized_data.data)[i])
             final_data.append(final_dict)
         return Response({'Message':'TRUE','data':final_data})
     except:
@@ -1350,8 +1353,11 @@ def topComments(request,format=None):
                 serialized_data = eversideTopComments(query_exec,many=True)
         final_data = []
         for i in range(len(serialized_data.data)):
+            final_dict = {}
             dict_id = {'id':i+1}
-            final_dict = dict_id|dict((serialized_data.data)[i])
+            # final_dict = dict_id|dict((serialized_data.data)[i])
+            final_dict.update(dict_id)
+            final_dict.update(dict((serialized_data.data)[i]))
             final_data.append(final_dict)
         return Response({'Message':'TRUE','data':final_data})
         
