@@ -210,8 +210,26 @@ def func(df):
 
     return(df_engagement_model_data)
 
-
-
+#-----------------Login API--------------------------------------------------------------
+@api_view(['POST'])
+def userLogin(request,format=None):
+    if request.method == 'POST':
+        try:
+            data = request.data
+            username = str(data['username'])
+            password = str(data['password'])
+        
+            if username == 'everside_user' or username == 'user@everside.com' or username=='a':
+                if password == 'Test@1234' or password=='a':
+                    return Response({'Message':'TRUE'})
+                else:
+                    return Response({'Message':'FALSE'})
+            else:
+                return Response({'Message':'FALSE'})
+        except:
+            return Response({'Message':'FALSE'})
+            
+            
 #---------------------Dashboard API Start here--------------------------------------------
 @api_view(['GET'])
 def cityStateClinics(request,format=None):

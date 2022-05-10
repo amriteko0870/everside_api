@@ -4,8 +4,10 @@ from . import views
 
 
 urlpatterns = [
+        path('userLogin',views.userLogin,name='userLogin'),
         path('netPromoterScore',views.netPromoterScore,name='netPromoterScore'),
         path('netSentimentScore',views.netSentimentScore,name='netSentimentScore'),
+        path('totalCards',views.totalCards,name='totalCards'),
         path('npsOverTime',views.npsOverTime,name='npsOverTime'),
         path('nssOverTime',views.nssOverTime,name='nssOverTime'),
         path('npsVsSentiments',views.npsVsSentiments,name='npsVsSentiments'),
@@ -13,7 +15,6 @@ urlpatterns = [
         path('topComments',views.topComments,name='topComments'),
         path('totalComments',views.totalComments,name='totalComments'),
         path('clinics_data',views.clinics_data,name='clinics_data'),
-        path('totalCards',views.totalCards,name='totalCards'),
         path('wordFrequency',views.wordFrequency,name='wordFrequency'),
         path('cityStateClinics',views.cityStateClinics,name='cityStateClinics'),
         path('egStatistics',views.egStatistics,name='egStatistics'),
